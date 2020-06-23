@@ -123,7 +123,7 @@ Next , step is to actualy create the dense layers . so we created the layers wit
         nb_train_samples = 2398
         nb_validation_samples = 72
 
-# We only train 5 EPOCHS 
+# We only train 3 EPOCHS 
         epochs = 3
         batch_size = 32
 
@@ -134,3 +134,59 @@ Next , step is to actualy create the dense layers . so we created the layers wit
         callbacks = callbacks,
         validation_data = validation_generator,
         validation_steps = nb_validation_samples // batch_size)
+        
+        
+![Screenshot (492)](https://user-images.githubusercontent.com/51692515/85364381-a476b980-b540-11ea-8b45-eeb69f8c7ee6.png)
+
+
+# NEXT IS TO TEST OUR MODEL :
+  
+# so we created code for video streaming and identify the person in it:
+  The code for same is also present in the repo above.
+  
+  Firstly , we loaded the required modules for video streaming , loading model and image for preprocessing purpose.
+     
+           import cv2
+           import numpy
+           from keras.models import load_model
+           from keras.preprocessing import image
+   
+  Next , we loaded the trained model and activated the camera to start video stream.
+  
+           check_model=load_model('face_detection.h5')
+           camera=cv2.VideoCapture(0)
+ 
+ Next , we created while loop for continous stream , read the photo and changed the size of image as defined by our model . NOTE that VGG19 requires 4D images thats why we changed the Dimensions of the image. we predicted the output and applied the if conditions to further filter it.
+               
+            while 1:
+                status,photo=camera.read()
+                test_image=cv2.resize(photo,dsize=(224,224), interpolation=cv2.INTER_CUBIC)
+                image_test=numpy.expand_dims(test_image,axis=0)
+    
+                output=check_model.predict(image_test)
+                #print(check_model.predict(image_test))
+
+                if output[0][0]>= output[0][1] :
+                     print(check_model.predict(image_test))
+                     texted_image =cv2.putText(img=photo, text="ANKUSH", org=(50,400),fontFace=2, fontScale=2, color=(0,0,255), thickness=3)
+               elif output[0][0] < output[0][1] :
+                      print(check_model.predict(image_test))
+                      texted_image =cv2.putText(img=photo, text="ARTI", org=(50,400),fontFace=2, fontScale=2, color=(0,255,0), thickness=3)
+        
+               cv2.imshow("VIDEO",texted_image)
+               cv2.waitKey(10)
+               if cv2.waitKey(100) == 13:
+                      break
+        
+        
+       cv2.destroyAllWindows()
+       camera.release()
+       
+       
+# OUTPUT:
+
+# My model was successfully able to identify me.
+
+![Screenshot (493)](https://user-images.githubusercontent.com/51692515/85365288-ae012100-b542-11ea-8a22-ae91d23553dc.png)
+
+
