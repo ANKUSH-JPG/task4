@@ -60,4 +60,77 @@ Next , step is to actualy create the dense layers . so we created the layers wit
 ![Screenshot (491)](https://user-images.githubusercontent.com/51692515/85363562-d424c200-b53e-11ea-9cc5-8b42a739322d.png)
 
         
+  Next , is to input images . since , we have limited images therefore before giving to model we need feature engineering to bo done. So , we imported Imagedatagenerator to do feature engineering.
   
+       from keras_preprocessing.image import ImageDataGenerator
+       train_data_dir = 'F:/MLOPS/practise/ENVIRONMENT2/ankush_dataset_images/train/'
+       validation_data_dir = 'F:/MLOPS/practise/ENVIRONMENT2/ankush_dataset_images/test/'
+
+
+       train_datagen = ImageDataGenerator(
+                    rescale=1./255,
+                    rotation_range=45,
+                    width_shift_range=0.3,
+                    height_shift_range=0.3,
+                    horizontal_flip=True,
+                    fill_mode='nearest')
+ 
+       validation_datagen = ImageDataGenerator(rescale=1./255)
+ 
+       batch_size = 32
+ 
+       train_generator = train_datagen.flow_from_directory(
+                     train_data_dir,
+                     target_size=(224,224),
+                     batch_size=batch_size,
+                     class_mode='categorical')
+ 
+       validation_generator = validation_datagen.flow_from_directory(
+                     validation_data_dir,
+                     target_size=(224,224),
+                     batch_size=batch_size,
+                     class_mode='categorical')
+                     
+                     
+ The final step is to compile the model and then start training the model . So , we used adam optimizer and the binary_crossentropy for calculating the loss . Next we trained the model with defined no of epochs and provide the images.
+ 
+        from keras.optimizers import RMSprop
+        from keras.optimizers import Adam
+        from keras.callbacks import ModelCheckpoint, EarlyStopping
+
+                     
+       checkpoint = ModelCheckpoint("face_detection.h5",
+                             monitor="val_loss",
+                             mode="min",
+                             save_best_only = True,
+                             verbose=1)
+
+        earlystop = EarlyStopping(monitor = 'val_loss', 
+                          min_delta = 0, 
+                          patience = 3,
+                          verbose = 1,
+                          restore_best_weights = True)
+
+# we put our call backs into a callback list
+       callbacks = [earlystop, checkpoint]
+
+# We use a very small learning rate 
+        new_model.compile(loss = 'binary_crossentropy',
+                     optimizer = Adam(lr = 0.0001),
+                      metrics = ['accuracy'])
+
+# Enter the number of training and validation samples here
+        nb_train_samples = 2398
+        nb_validation_samples = 72
+
+# We only train 5 EPOCHS 
+        epochs = 3
+        batch_size = 32
+
+        history = new_model.fit_generator(
+        train_generator,
+        steps_per_epoch = nb_train_samples // batch_size,
+        epochs = epochs,
+        callbacks = callbacks,
+        validation_data = validation_generator,
+        validation_steps = nb_validation_samples // batch_size)
